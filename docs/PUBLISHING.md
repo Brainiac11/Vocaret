@@ -29,7 +29,11 @@ For maintainers. Nothing here is needed to use or develop Vocaret.
 
    The `Release` workflow packages the extension with `vsce` and attaches the
    `.vsix` to a GitHub release. People can install that file directly
-   (Extensions > ... > Install from VSIX).
+   (Extensions > ... > Install from VSIX). The release notes are the
+   version's `CHANGELOG.md` section plus install steps
+   (`scripts/release_notes.sh`); the workflow stops if the tag doesn't match
+   the version in `extension/package.json` or the changelog has no section
+   for it.
 
 ## Marketplaces
 
