@@ -1,0 +1,243 @@
+{
+  "name": "vocaret",
+  "displayName": "Vocaret - Voice Typing for Code",
+  "description": "Say what you want typed and it is written at your caret. Local speech recognition; works with Claude, ChatGPT/Codex, OpenAI, OpenRouter, DeepSeek, Gemini, local models and more.",
+  "version": "0.2.0",
+  "publisher": "vocaret",
+  "license": "MIT",
+  "icon": "icon.png",
+  "galleryBanner": {
+    "color": "#1b1f2a",
+    "theme": "dark"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Brainiac11/Vocaret.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Brainiac11/Vocaret/issues"
+  },
+  "homepage": "https://github.com/Brainiac11/Vocaret#readme",
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "AI",
+    "Other"
+  ],
+  "keywords": [
+    "voice",
+    "dictation",
+    "speech to code",
+    "whisper",
+    "claude",
+    "chatgpt",
+    "openrouter",
+    "deepseek",
+    "ollama",
+    "accessibility"
+  ],
+  "main": "./extension.js",
+  "extensionKind": [
+    "ui",
+    "workspace"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "scripts": {
+    "bundle": "node scripts/bundle.js",
+    "vscode:prepublish": "node scripts/bundle.js",
+    "package": "vsce package",
+    "publish:vsce": "vsce publish",
+    "publish:ovsx": "ovsx publish"
+  },
+  "contributes": {
+    "commands": [
+      {
+        "command": "vocaret.toggle",
+        "title": "Vocaret: Start / Finish Voice Instruction"
+      },
+      {
+        "command": "vocaret.cancel",
+        "title": "Vocaret: Cancel"
+      },
+      {
+        "command": "vocaret.instruct",
+        "title": "Vocaret: Type an Instruction Instead of Speaking"
+      },
+      {
+        "command": "vocaret.selectProvider",
+        "title": "Vocaret: Choose Provider and Model"
+      },
+      {
+        "command": "vocaret.setApiKey",
+        "title": "Vocaret: Set API Key"
+      },
+      {
+        "command": "vocaret.clearApiKey",
+        "title": "Vocaret: Remove Stored API Key"
+      },
+      {
+        "command": "vocaret.setup",
+        "title": "Vocaret: Install or Update Speech Engine"
+      },
+      {
+        "command": "vocaret.doctor",
+        "title": "Vocaret: Check Setup (Microphone, Speech Model, Provider)"
+      },
+      {
+        "command": "vocaret.showLog",
+        "title": "Vocaret: Show Log"
+      },
+      {
+        "command": "vocaret.restartDaemon",
+        "title": "Vocaret: Restart Background Service"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "vocaret.toggle",
+        "key": "ctrl+alt+space"
+      },
+      {
+        "command": "vocaret.cancel",
+        "key": "escape",
+        "when": "vocaret.recording"
+      }
+    ],
+    "configuration": {
+      "title": "Vocaret",
+      "properties": {
+        "vocaret.provider": {
+          "type": "string",
+          "order": 1,
+          "enum": [
+            "claude-code",
+            "codex",
+            "anthropic",
+            "openai",
+            "openrouter",
+            "deepseek",
+            "gemini",
+            "groq",
+            "mistral",
+            "xai",
+            "together",
+            "ollama",
+            "lmstudio",
+            "custom"
+          ],
+          "enumDescriptions": [
+            "Claude through the Claude Code CLI. Uses your Claude subscription login; no API key.",
+            "OpenAI models through the Codex CLI. Uses your ChatGPT subscription login; no API key.",
+            "Claude through the Anthropic API (API key).",
+            "OpenAI API (API key).",
+            "OpenRouter: one API key for models from many vendors.",
+            "DeepSeek API (API key).",
+            "Google Gemini through its OpenAI-compatible endpoint (API key).",
+            "Groq (API key).",
+            "Mistral (API key).",
+            "xAI (API key).",
+            "Together AI (API key).",
+            "Ollama running on this machine. No key; nothing leaves your computer.",
+            "LM Studio running on this machine. No key; nothing leaves your computer.",
+            "Any OpenAI-compatible endpoint. Set vocaret.baseUrl."
+          ],
+          "default": "claude-code",
+          "markdownDescription": "Which model service writes the code. The easiest way to switch is the command **Vocaret: Choose Provider and Model**, which also asks for an API key when one is needed."
+        },
+        "vocaret.model": {
+          "type": "string",
+          "order": 2,
+          "default": "",
+          "markdownDescription": "Model name for the chosen provider, exactly as that provider spells it. Empty uses the provider's default where there is one (`sonnet` for Claude Code)."
+        },
+        "vocaret.effort": {
+          "type": "string",
+          "order": 3,
+          "enum": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "default": "low",
+          "description": "Reasoning effort, for providers that have such a setting. Low keeps voice typing snappy."
+        },
+        "vocaret.baseUrl": {
+          "type": "string",
+          "order": 4,
+          "default": "",
+          "markdownDescription": "Endpoint for the `custom` provider, e.g. `http://localhost:8080/v1`. Also overrides the built-in URL of an OpenAI-compatible provider (useful for proxies)."
+        },
+        "vocaret.apiKeyEnv": {
+          "type": "string",
+          "order": 5,
+          "default": "",
+          "markdownDescription": "Environment variable to read the API key from, if you would rather not store it with **Vocaret: Set API Key**. Empty uses the provider's usual one (`OPENAI_API_KEY`, `OPENROUTER_API_KEY`, ...)."
+        },
+        "vocaret.extraBody": {
+          "type": "object",
+          "order": 6,
+          "default": {},
+          "markdownDescription": "Extra JSON fields added to requests to OpenAI-compatible providers, e.g. `{\"temperature\": 0}`."
+        },
+        "vocaret.timeoutSeconds": {
+          "type": "number",
+          "order": 7,
+          "default": 90,
+          "minimum": 5,
+          "description": "Give up on the model after this many seconds."
+        },
+        "vocaret.autoStopSilenceSeconds": {
+          "type": "number",
+          "order": 10,
+          "default": 0,
+          "minimum": 0,
+          "description": "Finish automatically after this many seconds of silence. 0 (default) means you finish by pressing the shortcut again, so pauses while you think are fine."
+        },
+        "vocaret.speechModel": {
+          "type": "string",
+          "order": 11,
+          "default": "auto",
+          "markdownDescription": "Whisper model for speech recognition. `auto` uses `large-v3-turbo` on an NVIDIA GPU and `small.en` on CPU. Any faster-whisper model name works (`medium.en`, `distil-large-v3`, ...)."
+        },
+        "vocaret.device": {
+          "type": "string",
+          "order": 12,
+          "enum": [
+            "auto",
+            "cuda",
+            "cpu"
+          ],
+          "default": "auto",
+          "description": "Where speech recognition runs."
+        },
+        "vocaret.language": {
+          "type": "string",
+          "order": 13,
+          "default": "en",
+          "description": "Language you speak, as a code (en, de, es, ...). Leave empty to auto-detect (needs a multilingual speech model)."
+        },
+        "vocaret.recorderCommand": {
+          "type": "string",
+          "order": 14,
+          "default": "",
+          "markdownDescription": "Custom capture command that writes raw 16 kHz mono 16-bit PCM to stdout, for picking a specific microphone. Example: `arecord -q -D hw:1 -f S16_LE -r 16000 -c 1 -t raw -`. Empty uses the system default input."
+        },
+        "vocaret.highlightChanges": {
+          "type": "boolean",
+          "order": 20,
+          "default": true,
+          "description": "Briefly highlight what a voice instruction changed."
+        },
+        "vocaret.command": {
+          "type": "string",
+          "order": 30,
+          "default": "vocaret",
+          "description": "Path of the vocaret launcher, if it is not in ~/.local/bin."
+        }
+      }
+    }
+  }
+}

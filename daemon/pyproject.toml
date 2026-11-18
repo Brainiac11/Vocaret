@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "vocaret"
+version = "0.2.0"
+description = "Voice typing for code: speak an instruction and it is written into your editor. Model-agnostic."
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.10"
+dependencies = [
+    "faster-whisper>=1.1",
+    "numpy",
+    "anthropic>=1.0",
+]
+
+[project.optional-dependencies]
+# CUDA runtime libraries for GPU speech recognition (NVIDIA only).
+gpu = [
+    "nvidia-cublas-cu12",
+    "nvidia-cudnn-cu12>=9,<10",
+]
+
+[project.scripts]
+vocaret = "vocaret.__main__:main"
+
+[tool.setuptools]
+packages = ["vocaret"]

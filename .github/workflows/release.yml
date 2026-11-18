@@ -1,0 +1,37 @@
+name: Release
+
+# Pushing a tag like v0.2.0 builds the extension and attaches it to a GitHub
+# release. If the VSCE_PAT / OVSX_PAT repository secrets are set, it is also
+# published to the VS Code Marketplace / Open VSX (see docs/PUBLISHING.md).
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Package
+        working-directory: extension
+        run: npx --yes @vscode/vsce package --out ../vocaret-${{ github.ref_name }}.vsix
+      - name: GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "${{ github.ref_name }}" "vocaret-${{ github.ref_name }}.vsix" --generate-notes
+      - name: Publish to the VS Code Marketplace
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+        if: ${{ env.VSCE_PAT != '' }}
+        run: npx --yes @vscode/vsce publish --packagePath "vocaret-${{ github.ref_name }}.vsix"
+      - name: Publish to Open VSX
+        env:
+          OVSX_PAT: ${{ secrets.OVSX_PAT }}
+        if: ${{ env.OVSX_PAT != '' }}
+        run: npx --yes ovsx publish "vocaret-${{ github.ref_name }}.vsix" -p "$OVSX_PAT"
